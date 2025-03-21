@@ -1,10 +1,15 @@
 import os
 from flask import Flask, request, jsonify
-from newspaper import Article
+from newspaper import Article, Config
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+
+# Set a browser-like User-Agent
+user_config = Config()
+user_config.browser_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
+user_config.request_timeout = 10
 
 @app.route('/scrape', methods=['GET'])
 def scrape():
@@ -13,7 +18,8 @@ def scrape():
         return jsonify({"error": "Missing URL"}), 400
 
     try:
-        article = Article(url)
+        # Use the custom config to bypass 403 errors
+        article = Article(url, config=user_config)
         article.download()
         article.parse()
 
